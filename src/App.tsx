@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, Link, useSearchParams } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
@@ -1254,15 +1254,24 @@ function CreateWizard() {
 function ReceiverView() {
   const { id } = useParams<{ id: string }>();
   // Check for ?answered=true query param
-  // const queryParams = new URLSearchParams(window.location.search);
-  // Unused for now, but could be used to force read-only mode if needed
-  // const isAnsweredView = queryParams.get('answered') === 'true';
+  // Check for ?answered=true query param
+  const [searchParams] = useSearchParams();
+  const isAnsweredView = searchParams.get('answered') === 'true';
 
-  const [unwrapped, setUnwrapped] = useState(false);
+  const [unwrapped, setUnwrapped] = useState(isAnsweredView);
   const [linkData, setLinkData] = useState<any | null>(null);
   const [pinEntered, setPinEntered] = useState('');
   const [pinError, setPinError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const cardsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isAnsweredView && !loading && cardsRef.current) {
+      setTimeout(() => {
+        cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500);
+    }
+  }, [isAnsweredView, loading]);
 
   // State for receiver's answers
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
@@ -1539,7 +1548,7 @@ function ReceiverView() {
 
         {/* Interactive Cards */}
         {linkData.selected_cards?.length > 0 && (
-          <div className="lovelink-card p-8">
+          <div ref={cardsRef} className="lovelink-card p-8">
             <h3 className="text-xl font-semibold text-[#2B1E1A] mb-2 flex items-center gap-2">
               <Gift className="w-5 h-5 text-[#D56A6A]" />
               Interactive Cards
