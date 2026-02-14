@@ -49,6 +49,7 @@ import {
   generateSlug, upsertUser, getUserValentines, createValentine, getValentineBySlug, incrementViewCount,
   getRandomQuestions, getRandomLovePrompt, saveCardAnswers
 } from './lib/supabaseClient';
+import { Footer } from './components/Footer';
 import './App.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -130,6 +131,8 @@ function HeroSection({ onStart }: { onStart: () => void }) {
       <p className="mt-6 text-sm text-[#7A6B63]">
         Takes 5–10 minutes. One link to share.
       </p>
+
+      <Footer />
     </section>
   );
 }
@@ -235,7 +238,7 @@ function WizardBasics({ data, onUpdate, onNext }: {
   const tones: Tone[] = ['Sweet', 'Funny', 'Poetic', 'Deep', 'Spicy'];
 
   return (
-    <div className="lovelink-card w-full max-w-[760px] mx-auto p-8 md:p-10">
+    <div className="lovelink-card w-full max-w-[760px] mx-auto p-6 md:p-10">
       <span className="step-indicator">Step 1 of 6</span>
       <h2 className="text-3xl font-semibold text-[#2B1E1A] mt-2 mb-8">Who is this for?</h2>
 
@@ -347,7 +350,7 @@ function WizardLoveNote({ data, onUpdate, onNext, onBack }: {
   };
 
   return (
-    <div className="lovelink-card w-full max-w-[760px] mx-auto p-8 md:p-10">
+    <div className="lovelink-card w-full max-w-[760px] mx-auto p-6 md:p-10">
       <span className="step-indicator">Step 2 of 6</span>
       <h2 className="text-3xl font-semibold text-[#2B1E1A] mt-2 mb-6">Your love note</h2>
 
@@ -502,7 +505,7 @@ function WizardCards({ data, onUpdate, onNext, onBack }: {
   };
 
   return (
-    <div className="lovelink-card w-full max-w-[760px] mx-auto p-8 md:p-10">
+    <div className="lovelink-card w-full max-w-[760px] mx-auto p-6 md:p-10">
       <span className="step-indicator">Step 3 of 6</span>
       <h2 className="text-3xl font-semibold text-[#2B1E1A] mt-2 mb-2">Add cards to play</h2>
       <p className="text-[#7A6B63] mb-6">Select interactive cards and customize specific questions for your partner to answer.</p>
@@ -641,7 +644,7 @@ function WizardBouquet({ data, onUpdate, onNext, onBack }: {
   onBack: () => void;
 }) {
   return (
-    <div className="lovelink-card w-full max-w-[760px] mx-auto p-8 md:p-10">
+    <div className="lovelink-card w-full max-w-[760px] mx-auto p-6 md:p-10">
       <span className="step-indicator">Step 4 of 6</span>
       <h2 className="text-3xl font-semibold text-[#2B1E1A] mt-2 mb-6">Design a bouquet</h2>
 
@@ -672,7 +675,7 @@ function WizardPlans({ data, onUpdate, onNext, onBack }: {
   onBack: () => void;
 }) {
   return (
-    <div className="lovelink-card w-full max-w-[760px] mx-auto p-8 md:p-10">
+    <div className="lovelink-card w-full max-w-[760px] mx-auto p-6 md:p-10">
       <span className="step-indicator">Step 5 of 6</span>
       <h2 className="text-3xl font-semibold text-[#2B1E1A] mt-2 mb-6">Plans + links</h2>
 
@@ -792,7 +795,7 @@ function WizardShare({ data, onUpdate, onCreate, onBack }: {
     const shareLink = `${window.location.origin}/v/${slug}`;
 
     return (
-      <div className="lovelink-card w-full max-w-[760px] mx-auto p-8 md:p-10 text-center">
+      <div className="lovelink-card w-full max-w-[760px] mx-auto p-6 md:p-10 text-center">
         <div className="w-16 h-16 rounded-full bg-[#D56A6A]/10 flex items-center justify-center mx-auto mb-6">
           <Heart className="w-8 h-8 text-[#D56A6A] fill-[#D56A6A]" />
         </div>
@@ -1685,6 +1688,8 @@ function ReceiverView() {
           </Link>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
@@ -1750,13 +1755,7 @@ function LandingPage() {
         <SupportSection />
 
         {/* Footer */}
-        <footer className="py-12 px-4 text-center border-t border-[#2B1E1A]/10">
-          <AnimatedLogo size={32} />
-          <p className="text-sm text-[#7A6B63] mt-4">Made with love for Valentine's Day</p>
-          <p className="text-xs text-[#7A6B63] mt-2">
-            Created by <a href="mailto:somarajulaxmanprasad100@gmail.com" className="text-[#D56A6A] hover:underline">Laxman</a>
-          </p>
-        </footer>
+        <Footer />
       </main>
     </>
   );
