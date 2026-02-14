@@ -727,7 +727,7 @@ function WizardShare({ data, onUpdate, onCreate, onBack }: {
           </p>
           <div className="flex flex-wrap justify-center gap-3 mb-4">
             <a
-              href="https://www.buymeacoffee.com/lovelink"
+              href="https://buymeacoffee.com/devopsai"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary py-2 px-4 text-sm inline-flex items-center gap-2"

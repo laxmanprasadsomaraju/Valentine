@@ -17,49 +17,49 @@ export const SupportSection: React.FC = () => {
               <p className="text-sm text-[#7A6B63]">Created with love, for love</p>
             </div>
           </div>
-          
+
           <div className="text-[#2B1E1A] leading-relaxed space-y-4">
             <p>
-              Hi, I'm <strong>Laxman</strong>. I created LoveLink because I know what it's like to be far from someone you love. 
-              My girlfriend lives miles away, and I wanted to send her something special—something that would make her smile, 
+              Hi, I'm <strong>Laxman</strong>. I created LoveLink because I know what it's like to be far from someone you love.
+              My girlfriend lives miles away, and I wanted to send her something special—something that would make her smile,
               feel my presence, and know how much she means to me.
             </p>
-            
+
             <p>
-              I couldn't find the perfect digital Valentine experience, so I built one. LoveLink is designed for everyone 
-              who wants to surprise their special someone with a beautiful, interactive, and personal love note—complete with 
+              I couldn't find the perfect digital Valentine experience, so I built one. LoveLink is designed for everyone
+              who wants to surprise their special someone with a beautiful, interactive, and personal love note—complete with
               custom flowers, heartfelt messages, music, and playful cards.
             </p>
-            
+
             <p>
-              No login. No friction. Just create, share, and watch their heart melt. 
+              No login. No friction. Just create, share, and watch their heart melt.
               Because love deserves to be expressed in the most beautiful way possible.
             </p>
           </div>
-          
+
           <div className="mt-6 pt-6 border-t border-[#2B1E1A]/10 flex items-center gap-2 text-sm text-[#7A6B63]">
             <Heart className="w-4 h-4 text-[#D56A6A] fill-[#D56A6A]" />
             <span>Made with love for all the long-distance lovers out there</span>
           </div>
         </div>
-        
+
         {/* Support Card */}
         <div className="lovelink-card p-8 text-center">
           <div className="w-16 h-16 rounded-full bg-[#D56A6A]/10 flex items-center justify-center mx-auto mb-6">
             <Coffee className="w-8 h-8 text-[#D56A6A]" />
           </div>
-          
+
           <h3 className="text-2xl font-semibold text-[#2B1E1A] mb-3">
             Support LoveLink
           </h3>
-          
+
           <p className="text-[#7A6B63] mb-6 max-w-md mx-auto">
-            If you enjoyed creating your Valentine and want to support future updates, 
+            If you enjoyed creating your Valentine and want to support future updates,
             you can buy me a coffee. Every contribution helps keep LoveLink free for everyone!
           </p>
-          
-          <a 
-            href="https://www.buymeacoffee.com/lovelink"
+
+          <a
+            href="https://buymeacoffee.com/devopsai"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary inline-flex items-center gap-2 mb-8"
@@ -67,7 +67,7 @@ export const SupportSection: React.FC = () => {
             <Coffee className="w-5 h-5" />
             Buy me a coffee
           </a>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
             {/* Feedback */}
             <div className="lovelink-card-inner p-4">
@@ -80,7 +80,7 @@ export const SupportSection: React.FC = () => {
                   <p className="text-xs text-[#7A6B63]">Share your thoughts</p>
                 </div>
               </div>
-              <a 
+              <a
                 href="mailto:somarajulaxmanprasad100@gmail.com?subject=LoveLink Feedback"
                 className="text-[#9370DB] text-sm hover:underline flex items-center gap-1"
               >
@@ -88,7 +88,7 @@ export const SupportSection: React.FC = () => {
                 somarajulaxmanprasad100@gmail.com
               </a>
             </div>
-            
+
             {/* Collaboration */}
             <div className="lovelink-card-inner p-4">
               <div className="flex items-center gap-3 mb-3">
@@ -100,7 +100,7 @@ export const SupportSection: React.FC = () => {
                   <p className="text-xs text-[#7A6B63]">Want to work together?</p>
                 </div>
               </div>
-              <a 
+              <a
                 href="mailto:somarajulaxmanprasad100@gmail.com?subject=LoveLink Collaboration"
                 className="text-[#7CB87C] text-sm hover:underline flex items-center gap-1"
               >
@@ -109,7 +109,7 @@ export const SupportSection: React.FC = () => {
               </a>
             </div>
           </div>
-          
+
           {/* Thank you message */}
           <div className="mt-8 pt-6 border-t border-[#2B1E1A]/10">
             <p className="text-sm text-[#7A6B63] italic">
