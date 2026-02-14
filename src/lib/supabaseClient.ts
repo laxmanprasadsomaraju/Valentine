@@ -152,3 +152,14 @@ export const saveCardAnswers = async (slug: string, answers: Record<string, Reco
   if (error) throw error;
 };
 
+// Submit feedback
+export const submitFeedback = async (feedback: { liked?: boolean; want_full_version?: boolean; comment?: string }) => {
+  const { error } = await supabase
+    .from('feedback')
+    .insert([feedback]);
+
+  if (error) {
+    console.error('Error submitting feedback:', error);
+  }
+};
+

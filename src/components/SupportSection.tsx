@@ -1,8 +1,10 @@
 // Support Section with Author Story
-import React from 'react';
+import React, { useState } from 'react';
 import { Heart, Coffee, Mail, Sparkles, Gift, MessageCircle } from 'lucide-react';
+import { FeedbackModal } from './FeedbackModal';
 
 export const SupportSection: React.FC = () => {
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   return (
     <section className="py-16 px-4 bg-gradient-to-b from-[#F6F2EE] via-[#F8E8E8] to-[#FFF5F5]">
       <div className="max-w-[800px] mx-auto">
@@ -54,8 +56,8 @@ export const SupportSection: React.FC = () => {
           </h3>
 
           <p className="text-[#7A6B63] mb-6 max-w-md mx-auto">
-            If you enjoyed creating your Valentine and want to support future updates,
-            you can buy me a coffee. Every contribution helps keep LoveLink free for everyone!
+            If you enjoyed this Valentine experience, you can leave a small tip by clicking Buy me a coffee. Your support helps me take this app further — adding more wish templates for kids, family, and loved ones (birthdays, anniversaries, and more).
+            <span className="block mt-2 font-medium">Thank you ❤️</span>
           </p>
 
           <a
@@ -80,13 +82,13 @@ export const SupportSection: React.FC = () => {
                   <p className="text-xs text-[#7A6B63]">Share your thoughts</p>
                 </div>
               </div>
-              <a
-                href="mailto:somarajulaxmanprasad100@gmail.com?subject=LoveLink Feedback"
-                className="text-[#9370DB] text-sm hover:underline flex items-center gap-1"
+              <button
+                onClick={() => setShowFeedbackModal(true)}
+                className="text-[#9370DB] text-sm hover:underline flex items-center gap-1 text-left"
               >
                 <Mail className="w-4 h-4" />
-                somarajulaxmanprasad100@gmail.com
-              </a>
+                Send Feedback
+              </button>
             </div>
 
             {/* Collaboration */}
@@ -119,7 +121,8 @@ export const SupportSection: React.FC = () => {
           </div>
         </div>
       </div>
-    </section>
+      <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} />
+    </section >
   );
 };
 

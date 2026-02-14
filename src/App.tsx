@@ -50,6 +50,8 @@ import {
   getRandomQuestions, getRandomLovePrompt, saveCardAnswers
 } from './lib/supabaseClient';
 import { Footer } from './components/Footer';
+import { FeedbackForm } from './components/FeedbackForm';
+import { FeedbackModal } from './components/FeedbackModal';
 import './App.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -739,6 +741,7 @@ function WizardShare({ data, onUpdate, onCreate, onBack }: {
   const [copied, setCopied] = useState(false);
   const [slug, setSlug] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const expiryOptions: ExpiryOption[] = ['7 days', '30 days', 'never'];
 
   const [isCreating, setIsCreating] = useState(false);
@@ -899,6 +902,8 @@ function WizardShare({ data, onUpdate, onCreate, onBack }: {
           </p>
         </div>
 
+
+
         {/* Support & Contact */}
         <div className="lovelink-card-inner p-5 bg-gradient-to-r from-[#D56A6A]/5 to-[#FFD93D]/5">
           <p className="text-sm text-[#7A6B63] mb-3">
@@ -913,18 +918,25 @@ function WizardShare({ data, onUpdate, onCreate, onBack }: {
             >
               ☕ Buy me a coffee
             </a>
-            <a
-              href="mailto:somarajulaxmanprasad100@gmail.com?subject=LoveLink Feedback"
+            <button
+              onClick={() => setShowFeedbackModal(true)}
               className="btn-secondary py-2 px-4 text-sm inline-flex items-center gap-2"
             >
               <Mail className="w-4 h-4" />
               Send Feedback
-            </a>
+            </button>
           </div>
           <p className="text-xs text-[#7A6B63]">
             📧 somarajulaxmanprasad100@gmail.com
           </p>
         </div>
+
+        <FeedbackForm />
+
+        <div className="mt-8 pt-6 border-t border-[#2B1E1A]/10">
+          <Footer />
+        </div>
+        <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} />
       </div>
     );
   }
@@ -1687,6 +1699,10 @@ function ReceiverView() {
             Send a reply back
           </Link>
         </div>
+      </div>
+
+      <div className="mt-12 max-w-sm mx-auto">
+        <FeedbackForm />
       </div>
 
       <Footer />
