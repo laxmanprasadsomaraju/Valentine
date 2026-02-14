@@ -31,24 +31,38 @@ interface BouquetBuilderProps {
 const FLOWER_TYPES_LIST: FlowerType[] = ['rose', 'tulip', 'daisy', 'sunflower', 'lily', 'orchid', 'peony', 'lavender', 'carnation'];
 
 // Helper: compute flower positions & stem paths for given bouquet
+// The RenderFlower SVG has a 100x100 viewBox with flower head centered at ~(50,50).
+// When rendered at size=35, the flower center is offset by ~17.5px from the group origin.
+// We compute positions for the flower CENTER, then offset the group translate accordingly.
 export function computeBouquetLayout(flowers: SelectedFlower[], bunchTightness: number) {
   const count = flowers.length;
   const gatherY = 185; // Y where stems converge at the ribbon
-  const gatherX = 100; // Center X
+  const gatherX = 100; // Center X of the SVG
+  const flowerSize = 35; // rendered size
+  const halfSize = flowerSize / 2; // offset from group origin to flower center (~17.5)
 
   return flowers.map((flower, index) => {
-    // Flower head X position (spread controlled by tightness)
-    const spread = 20 * (1 - bunchTightness * 0.3);
-    const flowerX = gatherX + (index - count / 2 + 0.5) * spread;
-    const flowerY = flower.y;
+    // Compute the CENTER position of each flower head
+    const spread = 22 * (1 - bunchTightness * 0.3);
+    const centerX = gatherX + (index - count / 2 + 0.5) * spread;
+    const centerY = flower.y + halfSize; // flower.y is the top, center is half-size below
 
-    // Stem converges from flower head to gathering point
-    const stemBottomX = gatherX + (index - count / 2 + 0.5) * (5 * bunchTightness);
+    // The <g transform="translate(tx, ty)"> places the SVG top-left at (tx, ty).
+    // To put the flower CENTER at (centerX, centerY), we translate to:
+    const flowerX = centerX - halfSize;
+    const flowerY = centerY - halfSize;
 
-    // Quadratic curve for a natural stem look
-    const controlX = (flowerX + stemBottomX) / 2;
-    const controlY = (flowerY + 50 + gatherY) / 2;
-    const stemPath = `M ${flowerX} ${flowerY + 30} Q ${controlX} ${controlY} ${stemBottomX} ${gatherY}`;
+    // Stem goes from the bottom of the flower head (centerX, centerY + halfSize)
+    // down to the ribbon gathering point
+    const stemTopX = centerX;
+    const stemTopY = centerY + halfSize * 0.6; // just below flower center
+
+    const stemBottomX = gatherX + (index - count / 2 + 0.5) * (4 * bunchTightness);
+
+    // Quadratic bezier for a natural curved stem
+    const controlX = (stemTopX + stemBottomX) / 2;
+    const controlY = (stemTopY + gatherY) / 2;
+    const stemPath = `M ${stemTopX} ${stemTopY} Q ${controlX} ${controlY} ${stemBottomX} ${gatherY}`;
 
     return {
       flower,
@@ -343,8 +357,8 @@ export const BouquetBuilder: React.FC<BouquetBuilderProps> = ({ bouquet, onUpdat
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 text-sm font-medium capitalize transition-colors ${activeTab === tab
-                ? 'text-[#D56A6A] border-b-2 border-[#D56A6A]'
-                : 'text-[#7A6B63] hover:text-[#2B1E1A]'
+              ? 'text-[#D56A6A] border-b-2 border-[#D56A6A]'
+              : 'text-[#7A6B63] hover:text-[#2B1E1A]'
               }`}
           >
             {tab}
@@ -393,8 +407,8 @@ export const BouquetBuilder: React.FC<BouquetBuilderProps> = ({ bouquet, onUpdat
                     key={stem.value}
                     onClick={() => updateAllStemColors(stem.value)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-full border-2 transition-all ${bouquet.stemColor === stem.value
-                        ? 'border-[#D56A6A] bg-[#D56A6A]/5'
-                        : 'border-transparent bg-white'
+                      ? 'border-[#D56A6A] bg-[#D56A6A]/5'
+                      : 'border-transparent bg-white'
                       }`}
                   >
                     <div className="w-4 h-4 rounded-full" style={{ backgroundColor: stem.color }} />
@@ -417,8 +431,8 @@ export const BouquetBuilder: React.FC<BouquetBuilderProps> = ({ bouquet, onUpdat
                     key={pot.value}
                     onClick={() => onUpdate({ ...bouquet, potStyle: pot.value })}
                     className={`p-3 rounded-xl border-2 text-left transition-all ${bouquet.potStyle === pot.value
-                        ? 'border-[#D56A6A] bg-[#D56A6A]/5'
-                        : 'border-transparent bg-white hover:bg-gray-50'
+                      ? 'border-[#D56A6A] bg-[#D56A6A]/5'
+                      : 'border-transparent bg-white hover:bg-gray-50'
                       }`}
                   >
                     <div
@@ -441,8 +455,8 @@ export const BouquetBuilder: React.FC<BouquetBuilderProps> = ({ bouquet, onUpdat
                       key={wrap.value}
                       onClick={() => onUpdate({ ...bouquet, wrapStyle: wrap.value })}
                       className={`px-3 py-2 rounded-full border-2 text-sm transition-all ${bouquet.wrapStyle === wrap.value
-                          ? 'border-[#D56A6A] bg-[#D56A6A]/5'
-                          : 'border-transparent bg-white'
+                        ? 'border-[#D56A6A] bg-[#D56A6A]/5'
+                        : 'border-transparent bg-white'
                         }`}
                     >
                       {wrap.label}
