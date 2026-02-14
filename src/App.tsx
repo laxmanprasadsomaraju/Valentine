@@ -665,19 +665,86 @@ function WizardShare({ data, onUpdate, onCreate, onBack }: {
           </button>
         </div>
 
-        {/* Support notice */}
-        <div className="lovelink-card-inner p-4 bg-gradient-to-r from-[#D56A6A]/5 to-[#FFD93D]/5">
-          <p className="text-sm text-[#7A6B63]">
-            Enjoyed creating this? Consider supporting LoveLink to keep it free!
+        {/* What's included summary */}
+        <div className="lovelink-card-inner p-5 mb-6 text-left">
+          <h4 className="font-semibold text-[#2B1E1A] mb-3 text-sm">✨ What your Valentine includes:</h4>
+          <div className="grid grid-cols-2 gap-2 text-sm text-[#7A6B63]">
+            <div className="flex items-center gap-2">
+              <span>💌</span> Love note from {data.senderName || 'you'}
+            </div>
+            {data.selectedCards.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span>🎴</span> {data.selectedCards.length} interactive card{data.selectedCards.length > 1 ? 's' : ''}
+              </div>
+            )}
+            {data.bouquet.flowers.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span>💐</span> {data.bouquet.flowers.length}-flower bouquet
+              </div>
+            )}
+            {data.musicUrl && (
+              <div className="flex items-center gap-2">
+                <span>🎵</span> YouTube music (auto-plays on open)
+              </div>
+            )}
+            {data.pin && (
+              <div className="flex items-center gap-2">
+                <span>🔒</span> PIN protected
+              </div>
+            )}
+            {(data.plans?.thisYear || data.plans?.nextYear) && (
+              <div className="flex items-center gap-2">
+                <span>🗓️</span> Future plans together
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Author Story */}
+        <div className="lovelink-card-inner p-5 mb-6 text-left bg-gradient-to-r from-[#FFF5F5] to-[#FFF8E8]">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D56A6A] to-[#FFB6C1] flex items-center justify-center flex-shrink-0">
+              <Heart className="w-5 h-5 text-white fill-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-[#2B1E1A] text-sm">The Story Behind LoveLink</p>
+              <p className="text-xs text-[#7A6B63]">by Laxman</p>
+            </div>
+          </div>
+          <p className="text-sm text-[#2B1E1A] leading-relaxed mb-3">
+            I built LoveLink because my girlfriend lives far away, and I wanted to send her something truly special —
+            not just a text, but a whole experience filled with flowers, music, and heartfelt messages.
           </p>
-          <a
-            href="https://www.buymeacoffee.com/lovelink"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#D56A6A] text-sm font-medium hover:underline mt-1 inline-block"
-          >
-            Buy me a coffee ☕
-          </a>
+          <p className="text-xs text-[#7A6B63] italic">
+            "Every love story shared here makes my heart full." — Laxman
+          </p>
+        </div>
+
+        {/* Support & Contact */}
+        <div className="lovelink-card-inner p-5 bg-gradient-to-r from-[#D56A6A]/5 to-[#FFD93D]/5">
+          <p className="text-sm text-[#7A6B63] mb-3">
+            Enjoyed creating this? Support LoveLink to keep it free for everyone!
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 mb-4">
+            <a
+              href="https://www.buymeacoffee.com/lovelink"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary py-2 px-4 text-sm inline-flex items-center gap-2"
+            >
+              ☕ Buy me a coffee
+            </a>
+            <a
+              href="mailto:somarajulaxmanprasad100@gmail.com?subject=LoveLink Feedback"
+              className="btn-secondary py-2 px-4 text-sm inline-flex items-center gap-2"
+            >
+              <Mail className="w-4 h-4" />
+              Send Feedback
+            </a>
+          </div>
+          <p className="text-xs text-[#7A6B63]">
+            📧 somarajulaxmanprasad100@gmail.com
+          </p>
         </div>
       </div>
     );
@@ -1183,23 +1250,49 @@ function ReceiverView() {
           </div>
         </div>
 
-        {/* Cards */}
+        {/* Interactive Cards */}
         {linkData.selected_cards?.length > 0 && (
           <div className="lovelink-card p-8">
-            <h3 className="text-xl font-semibold text-[#2B1E1A] mb-4 flex items-center gap-2">
+            <h3 className="text-xl font-semibold text-[#2B1E1A] mb-2 flex items-center gap-2">
               <Gift className="w-5 h-5 text-[#D56A6A]" />
               Interactive Cards
             </h3>
+            <p className="text-sm text-[#7A6B63] mb-6">Tap each card to explore together 💕</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {linkData.selected_cards.map((cardType: CardType, index: number) => {
                 const template = CARD_TEMPLATES[cardType];
+                const cardColors = [
+                  'from-[#FFF0F0] to-[#FFE8E8]',
+                  'from-[#F0F4FF] to-[#E8EEFF]',
+                  'from-[#FFF8E8] to-[#FFF0D4]',
+                  'from-[#F0FFF0] to-[#E8FFE8]',
+                  'from-[#FFF0FF] to-[#FFE8FF]',
+                  'from-[#F0FFFF] to-[#E8FFFF]',
+                  'from-[#FFFFF0] to-[#FFFFE8]',
+                  'from-[#FFF5F0] to-[#FFE8E0]',
+                  'from-[#F5F0FF] to-[#E8E0FF]',
+                ];
+                const bgGrad = cardColors[index % cardColors.length];
+
                 return (
-                  <div key={index} className="lovelink-card-inner p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-2xl">{template.icon}</span>
-                      <h4 className="font-semibold text-[#2B1E1A]">{cardType}</h4>
+                  <div key={index} className={`rounded-2xl p-5 bg-gradient-to-br ${bgGrad} border border-white/60 shadow-sm hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer`}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-3xl">{template.icon}</span>
+                      <div>
+                        <h4 className="font-semibold text-[#2B1E1A] text-base">{cardType}</h4>
+                        <p className="text-xs text-[#7A6B63]">{template.description}</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-[#7A6B63]">{template.description}</p>
+                    {template.defaultQuestions && template.defaultQuestions.length > 0 && (
+                      <div className="space-y-2 mt-3 pt-3 border-t border-[#2B1E1A]/10">
+                        {template.defaultQuestions.map((q, qi) => (
+                          <div key={qi} className="flex items-start gap-2">
+                            <span className="text-xs font-bold text-[#D56A6A] mt-0.5">{qi + 1}.</span>
+                            <p className="text-sm text-[#2B1E1A] leading-relaxed">{q}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}

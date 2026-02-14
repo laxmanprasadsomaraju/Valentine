@@ -33,29 +33,27 @@ const FLOWER_TYPES_LIST: FlowerType[] = ['rose', 'tulip', 'daisy', 'sunflower', 
 // Helper: compute flower positions & stem paths for given bouquet
 // The RenderFlower SVG has a 100x100 viewBox with flower head centered at ~(50,50).
 // When rendered at size=35, the flower center is offset by ~17.5px from the group origin.
-// We compute positions for the flower CENTER, then offset the group translate accordingly.
+// Stems are drawn FIRST (behind flowers), so the stem top sits behind the flower head.
 export function computeBouquetLayout(flowers: SelectedFlower[], bunchTightness: number) {
   const count = flowers.length;
   const gatherY = 185; // Y where stems converge at the ribbon
   const gatherX = 100; // Center X of the SVG
   const flowerSize = 35; // rendered size
-  const halfSize = flowerSize / 2; // offset from group origin to flower center (~17.5)
+  const halfSize = flowerSize / 2; // ~17.5
 
   return flowers.map((flower, index) => {
     // Compute the CENTER position of each flower head
     const spread = 22 * (1 - bunchTightness * 0.3);
     const centerX = gatherX + (index - count / 2 + 0.5) * spread;
-    const centerY = flower.y + halfSize; // flower.y is the top, center is half-size below
+    const centerY = flower.y + halfSize;
 
-    // The <g transform="translate(tx, ty)"> places the SVG top-left at (tx, ty).
-    // To put the flower CENTER at (centerX, centerY), we translate to:
+    // Group translate places SVG top-left, so offset by halfSize to center the flower
     const flowerX = centerX - halfSize;
     const flowerY = centerY - halfSize;
 
-    // Stem goes from the bottom of the flower head (centerX, centerY + halfSize)
-    // down to the ribbon gathering point
+    // Stem starts AT the flower center (it draws behind the flower since stems render first)
     const stemTopX = centerX;
-    const stemTopY = centerY + halfSize * 0.6; // just below flower center
+    const stemTopY = centerY; // right at the center - no gap!
 
     const stemBottomX = gatherX + (index - count / 2 + 0.5) * (4 * bunchTightness);
 

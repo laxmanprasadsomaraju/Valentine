@@ -1,6 +1,7 @@
-// Stats Component - Shows user counts and metrics
+// Stats Component - Shows Supabase-backed app metrics
 import React, { useState, useEffect } from 'react';
 import { Heart, Link2, Eye, Users } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 interface Stats {
   totalLinksCreated: number;
@@ -19,17 +20,31 @@ export const StatsDisplay: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For now, use localStorage as fallback
-    const fetchStats = () => {
+    const fetchStats = async () => {
       try {
-        const links = JSON.parse(localStorage.getItem('lovelinks') || '{}');
-        const linksArray = Object.values(links) as any[];
-        
+        // Get all valentines count
+        const { count: totalCount } = await supabase
+          .from('valentines')
+          .select('*', { count: 'exact', head: true });
+
+        // Get sent valentines count
+        const { count: sentCount } = await supabase
+          .from('valentines')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'sent');
+
+        // Get total views 
+        const { data: viewData } = await supabase
+          .from('valentines')
+          .select('view_count');
+
+        const totalViews = viewData?.reduce((acc, v) => acc + (v.view_count || 0), 0) || 0;
+
         setStats({
-          totalLinksCreated: linksArray.length,
-          totalLinksShared: linksArray.filter((l: any) => l.status !== 'draft').length,
-          totalViews: linksArray.reduce((acc: number, l: any) => acc + (l.viewCount || 0), 0),
-          activeLinks: linksArray.length
+          totalLinksCreated: totalCount || 0,
+          totalLinksShared: sentCount || 0,
+          totalViews,
+          activeLinks: totalCount || 0
         });
       } catch (e) {
         console.error('Error fetching stats:', e);
@@ -38,48 +53,50 @@ export const StatsDisplay: React.FC = () => {
     };
 
     fetchStats();
-    
-    // Update every 30 seconds
-    const interval = setInterval(fetchStats, 30000);
+    const interval = setInterval(fetchStats, 60000);
     return () => clearInterval(interval);
   }, []);
 
   const statItems = [
-    { 
-      icon: Heart, 
-      value: stats.totalLinksCreated, 
+    {
+      icon: Heart,
+      value: stats.totalLinksCreated,
       label: 'Valentines Created',
-      color: 'text-[#D56A6A]'
+      color: 'text-[#D56A6A]',
+      bg: 'bg-[#D56A6A]'
     },
-    { 
-      icon: Link2, 
-      value: stats.totalLinksShared, 
+    {
+      icon: Link2,
+      value: stats.totalLinksShared,
       label: 'Links Shared',
-      color: 'text-[#7CB87C]'
+      color: 'text-[#7CB87C]',
+      bg: 'bg-[#7CB87C]'
     },
-    { 
-      icon: Eye, 
-      value: stats.totalViews, 
+    {
+      icon: Eye,
+      value: stats.totalViews,
       label: 'Total Views',
-      color: 'text-[#9370DB]'
+      color: 'text-[#9370DB]',
+      bg: 'bg-[#9370DB]'
     },
-    { 
-      icon: Users, 
-      value: stats.activeLinks, 
+    {
+      icon: Users,
+      value: stats.activeLinks,
       label: 'Active Links',
-      color: 'text-[#DAA520]'
+      color: 'text-[#DAA520]',
+      bg: 'bg-[#DAA520]'
     }
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {statItems.map((item, index) => (
-        <div 
+        <div
           key={index}
           className="lovelink-card p-4 text-center animate-float"
           style={{ animationDelay: `${index * 0.2}s` }}
         >
-          <div className={`w-10 h-10 rounded-full bg-opacity-10 mx-auto mb-2 flex items-center justify-center ${item.color.replace('text-', 'bg-')}`}>
+          <div className={`w-10 h-10 rounded-full ${item.bg}/10 mx-auto mb-2 flex items-center justify-center`}>
             <item.icon className={`w-5 h-5 ${item.color}`} />
           </div>
           <div className="text-2xl font-bold text-[#2B1E1A]">
