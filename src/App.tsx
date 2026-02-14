@@ -926,7 +926,7 @@ function CreateWizard() {
         </div>
       )}
 
-      {/* Step -1: Existing Valentines */}
+      {/* Step -1: Existing Valentines + Support Prompt for Returning Users */}
       {step === -1 && (
         <div className="lovelink-card w-full max-w-[760px] mx-auto p-8 md:p-10">
           <h2 className="text-3xl font-semibold text-[#2B1E1A] mb-2">Welcome back! 💝</h2>
@@ -950,6 +950,47 @@ function CreateWizard() {
                 </button>
               </div>
             ))}
+          </div>
+
+          {/* Coffee Support Prompt for Repeat Users (2+ valentines) */}
+          {existingValentines.length >= 2 && (
+            <div className="rounded-2xl p-6 mb-8 bg-gradient-to-br from-[#FFF5F0] via-[#FFF8F5] to-[#FFFDF0] border border-[#FFE0CC]/40">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">☕</span>
+                <div>
+                  <h3 className="font-semibold text-[#2B1E1A]">You're a LoveLink regular! 🎉</h3>
+                  <p className="text-xs text-[#7A6B63]">Thank you for spreading love</p>
+                </div>
+              </div>
+              <p className="text-sm text-[#2B1E1A] leading-relaxed mb-3">
+                I spent days building LoveLink to give you and your loved ones a beautiful experience.
+                If you buy me a coffee or leave a small tip, it'll help me build more tools and upgrade
+                this one too — <strong>every penny matters</strong> and I'm incredibly grateful. 🙏
+              </p>
+              <a
+                href="https://buymeacoffee.com/devopsai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary py-2 px-5 text-sm inline-flex items-center gap-2 mb-4"
+              >
+                ☕ Buy me a coffee
+              </a>
+              <div className="pt-3 border-t border-[#2B1E1A]/10">
+                <p className="text-xs text-[#7A6B63] italic leading-relaxed">
+                  "To you and your loved ones — have a long and beautiful life together.
+                  LoveLink isn't just for Valentine's Day. Every day is a lovely day, and they deserve
+                  your love. Love them every day." 💕
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Inspirational Quote */}
+          <div className="text-center mb-6 p-4 rounded-xl bg-[#D56A6A]/5">
+            <p className="text-sm text-[#2B1E1A] italic leading-relaxed">
+              ✨ "Every day is a lovely day to show your love. They deserve it not just on Valentine's —
+              but every single day. Use LoveLink throughout your life, because love never has an expiry date."
+            </p>
           </div>
 
           <button
