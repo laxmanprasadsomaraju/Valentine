@@ -1,0 +1,322 @@
+/* LoveLink App Styles */
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom range slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: rgba(43, 30, 26, 0.1);
+  border-radius: 3px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #D56A6A;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(213, 106, 106, 0.4);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(213, 106, 106, 0.5);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #D56A6A;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(213, 106, 106, 0.4);
+}
+
+/* Date input styling */
+input[type="date"] {
+  font-family: 'Inter', sans-serif;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.3);
+  cursor: pointer;
+}
+
+/* Focus states */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #D56A6A;
+  outline-offset: 2px;
+}
+
+/* Card hover effects */
+.lovelink-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.lovelink-card:hover {
+  box-shadow: 0 22px 55px rgba(43, 30, 26, 0.15);
+}
+
+/* Button press effect */
+.btn-primary:active,
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+/* Chip selection animation */
+.lovelink-chip {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lovelink-chip.active {
+  transform: scale(1.02);
+}
+
+/* Textarea focus expansion */
+.lovelink-textarea:focus {
+  min-height: 200px;
+}
+
+/* Unwrap card glow effect */
+.unwrap-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 18px 45px rgba(213, 106, 106, 0.2); }
+  50% { box-shadow: 0 18px 55px rgba(213, 106, 106, 0.4); }
+}
+
+/* Flower SVG animations */
+.flower-svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+}
+
+.flower-svg:hover {
+  transform: scale(1.05);
+}
+
+/* Capsule dark section transitions */
+.section-dark .lovelink-card {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* Couple illustration animations */
+.couple-illustration .person-1,
+.couple-illustration .person-2 {
+  transform-origin: center bottom;
+}
+
+/* Card stack animation */
+.card-stack-illustration rect {
+  transform-origin: center center;
+}
+
+/* Gift illustration */
+.gift-illustration {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+/* Envelope illustration */
+.envelope-illustration {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+/* Animated logo */
+.animated-logo {
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+  50% { filter: drop-shadow(0 0 12px rgba(213, 106, 106, 0.4)); }
+}
+
+/* Music player floating */
+.music-player {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* AI Helper modal */
+.ai-helper-modal {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Bouquet builder flower picker */
+.flower-picker-item {
+  transition: all 0.2s ease;
+}
+
+.flower-picker-item:hover {
+  transform: translateY(-2px);
+}
+
+.flower-picker-item.selected {
+  ring: 2px solid #D56A6A;
+  background-color: rgba(213, 106, 106, 0.05);
+}
+
+/* Selected flower controls */
+.selected-flower-controls {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .lovelink-card {
+    border-radius: 22px;
+  }
+  
+  .lovelink-card-inner {
+    border-radius: 14px;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+  
+  /* Adjust flower sizes on mobile */
+  .flower-svg {
+    transform: scale(0.85);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .animate-float,
+  .animate-float-delayed,
+  .animate-heartbeat {
+    animation: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .grain-overlay,
+  nav,
+  .btn-primary,
+  .btn-secondary,
+  .music-player {
+    display: none !important;
+  }
+  
+  .lovelink-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+}
+
+/* Custom scrollbar for flower picker */
+.flower-picker-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.flower-picker-scroll::-webkit-scrollbar-track {
+  background: rgba(43, 30, 26, 0.05);
+  border-radius: 3px;
+}
+
+.flower-picker-scroll::-webkit-scrollbar-thumb {
+  background: rgba(213, 106, 106, 0.3);
+  border-radius: 3px;
+}
+
+.flower-picker-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(213, 106, 106, 0.5);
+}
+
+/* Pin input styling */
+input[type="password"].pin-input {
+  font-size: 2rem;
+  letter-spacing: 0.5em;
+  text-align: center;
+}
+
+/* Share buttons hover */
+.share-button {
+  transition: all 0.2s ease;
+}
+
+.share-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Link display */
+.link-display {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.875rem;
+}
+
+/* Toast notification */
+.toast {
+  animation: toastSlide 0.3s ease-out;
+}
+
+@keyframes toastSlide {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
