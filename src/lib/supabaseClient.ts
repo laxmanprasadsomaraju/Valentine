@@ -62,6 +62,7 @@ export const createValentine = async (valentineData: {
   expiry: string;
   open_date?: string;
   status?: string;
+  card_questions?: Record<string, string[]>;
 }) => {
   // Calculate expires_at based on expiry
   let expires_at = null;
@@ -112,3 +113,42 @@ export const incrementViewCount = async (slug: string) => {
       .eq('slug', slug);
   }
 };
+
+// Get random questions from question_bank for a card type
+export const getRandomQuestions = async (cardType: string, count: number = 5): Promise<string[]> => {
+  // Fetch all questions for this card type, then pick random ones client-side
+  const { data, error } = await supabase
+    .from('question_bank')
+    .select('question')
+    .eq('card_type', cardType);
+
+  if (error || !data || data.length === 0) return [];
+
+  // Shuffle and pick `count` random questions
+  const shuffled = data.sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map(q => q.question);
+};
+
+// Get a random love note prompt
+export const getRandomLovePrompt = async (category: string): Promise<string | null> => {
+  const { data, error } = await supabase
+    .from('love_note_prompts')
+    .select('prompt_text')
+    .eq('category', category);
+
+  if (error || !data || data.length === 0) return null;
+
+  const randomIndex = Math.floor(Math.random() * data.length);
+  return data[randomIndex].prompt_text;
+};
+
+// Save card answers from receiver
+export const saveCardAnswers = async (slug: string, answers: Record<string, Record<string, string>>) => {
+  const { error } = await supabase
+    .from('valentines')
+    .update({ card_answers: answers })
+    .eq('slug', slug);
+
+  if (error) throw error;
+};
+

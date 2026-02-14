@@ -17,7 +17,10 @@ import {
   Clock,
   Eye,
   Mail,
-  Loader2
+  Loader2,
+  Trash2,
+  Plus,
+  Save
 } from 'lucide-react';
 import type {
   WizardData,
@@ -42,7 +45,10 @@ import {
   EnvelopeIllustration,
   AnimatedLogo
 } from './components/AnimatedAvatars';
-import { generateSlug, upsertUser, getUserValentines, createValentine, getValentineBySlug, incrementViewCount } from './lib/supabaseClient';
+import {
+  generateSlug, upsertUser, getUserValentines, createValentine, getValentineBySlug, incrementViewCount,
+  getRandomQuestions, getRandomLovePrompt, saveCardAnswers
+} from './lib/supabaseClient';
 import './App.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -315,22 +321,29 @@ function WizardLoveNote({ data, onUpdate, onNext, onBack }: {
   onBack: () => void;
 }) {
   const [showAIHelper, setShowAIHelper] = useState(false);
-  const quickPrompts = ['How I feel today', 'What I miss', 'One promise'];
+  const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
 
-  const applyPrompt = (prompt: string) => {
-    const name = data.receiverName || 'my love';
-    const prompts: Record<string, string> = {
-      'How I feel today': `My dearest ${name},
+  const quickPrompts = [
+    { label: 'How I feel today', category: 'how_i_feel' },
+    { label: 'What I miss', category: 'what_i_miss' },
+    { label: 'One promise', category: 'one_promise' }
+  ];
 
-Every day with you feels like a gift I never expected to receive. Today, I find myself overwhelmed with gratitude for your presence in my life...`,
-      'What I miss': `My dearest ${name},
-
-There are moments when the distance between us feels unbearable. I miss the way your hand fits perfectly in mine...`,
-      'One promise': `My dearest ${name},
-
-I want to make you a promise today—a promise to always choose us, to choose love, even when things get hard...`
-    };
-    onUpdate({ senderNote: prompts[prompt] });
+  const applyPrompt = async (category: string) => {
+    setIsLoadingPrompt(true);
+    try {
+      const promptText = await getRandomLovePrompt(category);
+      if (promptText) {
+        // Replace {name} placeholder with actual name or "my love"
+        const name = data.receiverName || 'my love';
+        const personalizedNote = promptText.replace(/{name}/g, name);
+        onUpdate({ senderNote: personalizedNote });
+      }
+    } catch (error) {
+      console.error('Error fetching prompt:', error);
+    } finally {
+      setIsLoadingPrompt(false);
+    }
   };
 
   return (
@@ -341,12 +354,13 @@ I want to make you a promise today—a promise to always choose us, to choose lo
       <div className="flex flex-wrap gap-2 mb-6">
         {quickPrompts.map((prompt) => (
           <button
-            key={prompt}
-            onClick={() => applyPrompt(prompt)}
-            className="lovelink-chip text-sm"
+            key={prompt.label}
+            onClick={() => applyPrompt(prompt.category)}
+            disabled={isLoadingPrompt}
+            className="lovelink-chip text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            {prompt}
+            {isLoadingPrompt ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            {prompt.label}
           </button>
         ))}
       </div>
@@ -369,7 +383,7 @@ I want to make you a promise today—a promise to always choose us, to choose lo
       <AIWritingHelper
         isOpen={showAIHelper}
         onClose={() => setShowAIHelper(false)}
-        onSelect={(text) => onUpdate({ senderNote: text })}
+        onSelect={(text: string) => onUpdate({ senderNote: text })}
         partnerName={data.receiverName}
         partnerTitle={data.partnerTitle}
         customTitle={data.customTitle}
@@ -402,18 +416,96 @@ function WizardCards({ data, onUpdate, onNext, onBack }: {
     'Promise Card', 'Future Map', 'Secret Reveal', 'Playlist Link', 'Photo Link'
   ];
 
+  const [loadingQuestions, setLoadingQuestions] = useState<string | null>(null);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
   const toggleCard = (cardType: CardType) => {
     const newSelection = data.selectedCards.includes(cardType)
       ? data.selectedCards.filter(c => c !== cardType)
       : [...data.selectedCards, cardType];
-    onUpdate({ selectedCards: newSelection });
+
+    // If selecting a new card, set expanded to this one to encourage customization
+    if (!data.selectedCards.includes(cardType)) {
+      // Initialize with default questions if not already customized
+      if (!data.cardQuestions?.[cardType]) {
+        const defaultQs = CARD_TEMPLATES[cardType].defaultQuestions || [];
+        onUpdate({
+          selectedCards: newSelection,
+          cardQuestions: {
+            ...data.cardQuestions,
+            [cardType]: [...defaultQs]
+          }
+        });
+      } else {
+        onUpdate({ selectedCards: newSelection });
+      }
+      setExpandedCard(cardType);
+    } else {
+      onUpdate({ selectedCards: newSelection });
+    }
+  };
+
+  const updateQuestion = (cardType: CardType, index: number, value: string) => {
+    const questions = data.cardQuestions?.[cardType] || [];
+    const newQuestions = [...questions];
+    newQuestions[index] = value;
+
+    onUpdate({
+      cardQuestions: {
+        ...data.cardQuestions,
+        [cardType]: newQuestions
+      }
+    });
+  };
+
+  const addQuestion = (cardType: CardType) => {
+    const questions = data.cardQuestions?.[cardType] || [];
+    if (questions.length >= 5) return;
+
+    onUpdate({
+      cardQuestions: {
+        ...data.cardQuestions,
+        [cardType]: [...questions, '']
+      }
+    });
+  };
+
+  const removeQuestion = (cardType: CardType, index: number) => {
+    const questions = data.cardQuestions?.[cardType] || [];
+    const newQuestions = questions.filter((_, i) => i !== index);
+
+    onUpdate({
+      cardQuestions: {
+        ...data.cardQuestions,
+        [cardType]: newQuestions
+      }
+    });
+  };
+
+  const fetchRandomQuestions = async (cardType: CardType) => {
+    setLoadingQuestions(cardType);
+    try {
+      const newQuestions = await getRandomQuestions(cardType, 5);
+      if (newQuestions.length > 0) {
+        onUpdate({
+          cardQuestions: {
+            ...data.cardQuestions,
+            [cardType]: newQuestions
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+    } finally {
+      setLoadingQuestions(null);
+    }
   };
 
   return (
     <div className="lovelink-card w-full max-w-[760px] mx-auto p-8 md:p-10">
       <span className="step-indicator">Step 3 of 6</span>
       <h2 className="text-3xl font-semibold text-[#2B1E1A] mt-2 mb-2">Add cards to play</h2>
-      <p className="text-[#7A6B63] mb-6">Select 3-10 interactive cards for them to enjoy</p>
+      <p className="text-[#7A6B63] mb-6">Select interactive cards and customize specific questions for your partner to answer.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
         {cardTypes.map((cardType) => {
@@ -431,7 +523,7 @@ function WizardCards({ data, onUpdate, onNext, onBack }: {
                 <span className="text-2xl">{template.icon}</span>
                 <div>
                   <h4 className="font-semibold text-[#2B1E1A]">{cardType}</h4>
-                  <p className="text-sm text-[#7A6B63]">{template.description}</p>
+                  <p className="text-xs text-[#7A6B63]">{template.description}</p>
                 </div>
               </div>
             </button>
@@ -439,7 +531,90 @@ function WizardCards({ data, onUpdate, onNext, onBack }: {
         })}
       </div>
 
-      <div className="flex items-center justify-between p-4 bg-[#D56A6A]/5 rounded-xl mb-8">
+      {data.selectedCards.length > 0 && (
+        <div className="mt-8 pt-8 border-t border-[#2B1E1A]/10">
+          <h3 className="text-lg font-semibold text-[#2B1E1A] mb-4 flex items-center gap-2">
+            <span className="text-xl">✨</span> Customize your questions
+          </h3>
+          <p className="text-sm text-[#7A6B63] mb-4">Tap a card below to edit its questions. Your partner will answer these!</p>
+
+          <div className="space-y-4">
+            {data.selectedCards.map((cardType) => {
+              const template = CARD_TEMPLATES[cardType];
+              const questions = data.cardQuestions?.[cardType] || template.defaultQuestions || [];
+              const isExpanded = expandedCard === cardType;
+
+              return (
+                <div key={cardType} className={`border rounded-xl transition-all overflow-hidden ${isExpanded ? 'border-[#D56A6A] bg-[#fff5f5]' : 'border-[#2B1E1A]/10 bg-white hover:border-[#D56A6A]/50'}`}>
+                  <button
+                    className="w-full flex items-center justify-between p-4 text-left"
+                    onClick={() => setExpandedCard(isExpanded ? null : cardType)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{template.icon}</span>
+                      <span className="font-semibold text-[#2B1E1A]">{cardType}</span>
+                      <span className="text-xs bg-[#2B1E1A]/5 px-2 py-0.5 rounded-full text-[#7A6B63]">{questions.length} questions</span>
+                    </div>
+                    <span className={`transition-transform text-[#7A6B63] ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="p-4 pt-0">
+                      <div className="space-y-3 mb-4">
+                        {questions.map((q, idx) => (
+                          <div key={idx} className="flex gap-2">
+                            <div className="flex-1">
+                              <input
+                                type="text"
+                                value={q}
+                                onChange={(e) => updateQuestion(cardType, idx, e.target.value)}
+                                className="lovelink-input text-sm py-2 px-3 w-full"
+                                placeholder="Type your question..."
+                              />
+                            </div>
+                            <button
+                              onClick={() => removeQuestion(cardType, idx)}
+                              className="text-[#7A6B63] hover:text-red-500 p-2"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {questions.length < 5 && (
+                          <button
+                            onClick={() => addQuestion(cardType)}
+                            className="text-xs flex items-center gap-1 px-3 py-1.5 rounded-full border border-[#2B1E1A]/20 hover:bg-[#2B1E1A]/5 text-[#2B1E1A]"
+                          >
+                            <Plus className="w-3 h-3" /> Add Question
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => fetchRandomQuestions(cardType)}
+                          disabled={loadingQuestions === cardType}
+                          className="text-xs flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#D56A6A]/10 text-[#D56A6A] hover:bg-[#D56A6A]/20"
+                        >
+                          {loadingQuestions === cardType ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-3 h-3" />
+                          )}
+                          Help me with questions
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between p-4 bg-[#D56A6A]/5 rounded-xl mb-8 mt-6">
         <span className="text-sm text-[#7A6B63]">Selected cards</span>
         <span className="font-semibold text-[#D56A6A]">{data.selectedCards.length}</span>
       </div>
@@ -581,6 +756,7 @@ function WizardShare({ data, onUpdate, onCreate, onBack }: {
         sender_note: data.senderNote,
         bouquet: data.bouquet,
         selected_cards: data.selectedCards,
+        card_questions: data.cardQuestions as Record<string, string[]>,
         plans: data.plans,
         music_url: data.musicUrl,
         pin: data.pin,
@@ -1062,17 +1238,34 @@ function CreateWizard() {
 // Receiver View Component
 function ReceiverView() {
   const { id } = useParams<{ id: string }>();
+  // Check for ?answered=true query param
+  // const queryParams = new URLSearchParams(window.location.search);
+  // Unused for now, but could be used to force read-only mode if needed
+  // const isAnsweredView = queryParams.get('answered') === 'true';
+
   const [unwrapped, setUnwrapped] = useState(false);
   const [linkData, setLinkData] = useState<any | null>(null);
   const [pinEntered, setPinEntered] = useState('');
   const [pinError, setPinError] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // State for receiver's answers
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     const fetchValentine = async () => {
       if (id) {
         const data = await getValentineBySlug(id);
         setLinkData(data);
+
+        // Initialize answers state if answers exist
+        if (data.card_answers) {
+          setAnswers(data.card_answers);
+        }
+
         setLoading(false);
       }
     };
@@ -1088,6 +1281,41 @@ function ReceiverView() {
       if (id) incrementViewCount(id);
       setUnwrapped(true);
     }
+  };
+
+  const handleAnswerChange = (cardType: string, index: number, value: string) => {
+    setAnswers(prev => {
+      const currentCardAnswers = prev[cardType] || [];
+      const newCardAnswers = [...currentCardAnswers];
+      newCardAnswers[index] = value;
+      return {
+        ...prev,
+        [cardType]: newCardAnswers
+      };
+    });
+  };
+
+  const submitAnswers = async () => {
+    if (!id) return;
+    setIsSubmitting(true);
+    try {
+      await saveCardAnswers(id, answers as any);
+      setSubmissionSuccess(true);
+      // Update local data to reflect saved answers
+      setLinkData((prev: any) => ({ ...prev, card_answers: answers }));
+    } catch (error) {
+      console.error('Error saving answers:', error);
+      alert('Failed to save answers. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const shareAnsweredLink = () => {
+    const link = `${window.location.origin}/v/${id}?answered=true`;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (loading) {
@@ -1163,57 +1391,60 @@ function ReceiverView() {
   const flowers = bouquet.flowers || [];
   const receiverLayout = computeBouquetLayout(flowers, bouquet.bunchTightness || 0.5);
 
-  return (
-    <div className="min-h-screen bg-[#F6F2EE] py-12 px-4">
-      {/* Background Music - only plays for receiver after unwrap */}
-      {linkData.music_url && <MusicPlayer youtubeUrl={linkData.music_url} />}
+  const hasAnswers = !!linkData.card_answers && Object.keys(linkData.card_answers).length > 0;
+  const showInputs = !hasAnswers && !submissionSuccess;
+  const showReadOnlyAnswers = hasAnswers || submissionSuccess;
 
+  return (
+    <div className="min-h-screen bg-[#F6F2EE] pb-24 dot-grid">
       <FloatingHearts />
 
-      <div className="max-w-[800px] mx-auto space-y-8">
+      {/* Music Player */}
+      {linkData.music_url && <MusicPlayer youtubeUrl={linkData.music_url} />}
+
+      <div className="max-w-[760px] mx-auto px-4 pt-12 md:pt-20 space-y-8 relative z-10">
+
         {/* Header */}
-        <div className="text-center">
-          <Heart className="w-12 h-12 text-[#D56A6A] fill-[#D56A6A] mx-auto mb-4 animate-heartbeat" />
-          <h2 className="text-3xl md:text-4xl font-semibold text-[#2B1E1A] mb-2">
-            Happy Valentine's Day!
-          </h2>
-          <p className="text-[#7A6B63]">
-            From {linkData.sender_name || 'someone who loves you'}
+        <div className="text-center mb-12 animate-fade-in">
+          <div className="inline-block px-4 py-1 rounded-full bg-[#D56A6A]/10 text-[#D56A6A] text-sm font-medium mb-4">
+            {showReadOnlyAnswers ? 'Answered with love' : 'Something special for you'}
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#2B1E1A] mb-4 leading-tight">
+            Happy Valentine's Day,<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D56A6A] to-[#E8B4B4]">
+              {linkData.receiver_name}
+            </span>
+          </h1>
+          <p className="text-[#7A6B63] text-lg">
+            From your {linkData.partner_title?.toLowerCase() === 'custom' ? linkData.custom_title : linkData.partner_title?.toLowerCase()}, {linkData.sender_name}
           </p>
         </div>
 
-        {/* Love Note */}
+        {/* Note Card */}
         {linkData.sender_note && (
-          <div className="lovelink-card p-8">
-            <h3 className="text-xl font-semibold text-[#2B1E1A] mb-4 flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-[#D56A6A]" />
-              A Note For You
-            </h3>
-            <div className="lovelink-card-inner p-6">
-              <p className="text-[#2B1E1A] leading-relaxed whitespace-pre-wrap">
-                {linkData.sender_note}
-              </p>
-            </div>
+          <div className="lovelink-card p-8 md:p-12 text-center relative overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FFB6C1] via-[#D56A6A] to-[#FFB6C1]"></div>
+            <MessageCircle className="w-8 h-8 text-[#D56A6A]/20 mx-auto mb-6" />
+            <p className="font-handwriting text-2xl md:text-3xl text-[#2B1E1A] leading-relaxed whitespace-pre-line">
+              "{linkData.sender_note}"
+            </p>
           </div>
         )}
 
-        {/* Bouquet with proper stems */}
-        <div className="lovelink-card p-8">
-          <h3 className="text-xl font-semibold text-[#2B1E1A] mb-4 flex items-center gap-2">
-            <Heart className="w-5 h-5 text-[#D56A6A]" />
-            A Bouquet For You
-          </h3>
-
-          <div className="lovelink-card-inner p-6 relative" style={{ minHeight: '350px' }}>
-            <svg viewBox="0 0 200 300" className="w-full h-full" style={{ maxHeight: '350px' }}>
+        {/* Bouquet */}
+        <div className="lovelink-card p-8 flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#D56A6A]/5 pointer-events-none"></div>
+          <div className="relative z-10 scale-[1.2] origin-center">
+            <svg width="200" height="300" viewBox="0 0 200 300">
               <defs>
-                <linearGradient id="receiverStemGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#4A7C59" />
-                  <stop offset="100%" stopColor="#4A7C59" stopOpacity="0.7" />
+                <linearGradient id="receiverStemGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#2D5016" />
+                  <stop offset="50%" stopColor="#4A7C59" />
+                  <stop offset="100%" stopColor="#2D5016" />
                 </linearGradient>
               </defs>
 
-              {/* Individual stems per flower */}
+              {/* Stems behind flowers */}
               {receiverLayout.map((item: any) => (
                 <path
                   key={`stem-${item.flower.id}`}
@@ -1298,8 +1529,13 @@ function ReceiverView() {
               <Gift className="w-5 h-5 text-[#D56A6A]" />
               Interactive Cards
             </h3>
-            <p className="text-sm text-[#7A6B63] mb-6">Tap each card to explore together 💕</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <p className="text-sm text-[#7A6B63] mb-6">
+              {showInputs
+                ? "Here are some questions for you to answer 💕"
+                : "Your answers are saved below ✨"}
+            </p>
+
+            <div className="grid grid-cols-1 gap-4">
               {linkData.selected_cards.map((cardType: CardType, index: number) => {
                 const template = CARD_TEMPLATES[cardType];
                 const cardColors = [
@@ -1315,29 +1551,99 @@ function ReceiverView() {
                 ];
                 const bgGrad = cardColors[index % cardColors.length];
 
+                // Get questions: strict preference for custom ones, then defaults
+                const questions = (linkData.card_questions && linkData.card_questions[cardType])
+                  ? linkData.card_questions[cardType]
+                  : (template.defaultQuestions || []);
+
                 return (
-                  <div key={index} className={`rounded-2xl p-5 bg-gradient-to-br ${bgGrad} border border-white/60 shadow-sm hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer`}>
-                    <div className="flex items-center gap-3 mb-3">
+                  <div key={index} className={`rounded-2xl p-6 bg-gradient-to-br ${bgGrad} border border-white/60 shadow-sm`}>
+                    <div className="flex items-center gap-3 mb-4">
                       <span className="text-3xl">{template.icon}</span>
                       <div>
-                        <h4 className="font-semibold text-[#2B1E1A] text-base">{cardType}</h4>
+                        <h4 className="font-semibold text-[#2B1E1A] text-lg">{cardType}</h4>
                         <p className="text-xs text-[#7A6B63]">{template.description}</p>
                       </div>
                     </div>
-                    {template.defaultQuestions && template.defaultQuestions.length > 0 && (
-                      <div className="space-y-2 mt-3 pt-3 border-t border-[#2B1E1A]/10">
-                        {template.defaultQuestions.map((q, qi) => (
-                          <div key={qi} className="flex items-start gap-2">
-                            <span className="text-xs font-bold text-[#D56A6A] mt-0.5">{qi + 1}.</span>
-                            <p className="text-sm text-[#2B1E1A] leading-relaxed">{q}</p>
-                          </div>
-                        ))}
+
+                    {questions.length > 0 && (
+                      <div className="space-y-4 pt-2 border-t border-[#2B1E1A]/10">
+                        {questions.map((q: string, qi: number) => {
+                          const currentAnswer = answers[cardType]?.[qi] || '';
+                          const savedAnswer = linkData.card_answers?.[cardType]?.[qi];
+
+                          return (
+                            <div key={qi} className="space-y-2">
+                              <div className="flex items-start gap-2">
+                                <span className="text-sm font-bold text-[#D56A6A] mt-0.5">{qi + 1}.</span>
+                                <p className="text-base text-[#2B1E1A] leading-relaxed font-medium">{q}</p>
+                              </div>
+
+                              {showInputs ? (
+                                <input
+                                  type="text"
+                                  value={currentAnswer}
+                                  onChange={(e) => handleAnswerChange(cardType, qi, e.target.value)}
+                                  placeholder="Type your answer..."
+                                  className="w-full bg-white/50 border border-[#2B1E1A]/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#D56A6A]"
+                                />
+                              ) : (
+                                <div className="ml-5 p-2 bg-white/40 rounded-lg border border-[#2B1E1A]/5">
+                                  <p className="text-sm text-[#7A6B63] italic">
+                                    {savedAnswer || currentAnswer || <span className="opacity-50">No answer provided</span>}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
                 );
               })}
             </div>
+
+            {/* Submission Section */}
+            {showInputs && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={submitAnswers}
+                  disabled={isSubmitting}
+                  className="btn-primary w-full md:w-auto px-8"
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2 justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2 justify-center">
+                      <Save className="w-4 h-4" /> Save & Send Answers
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Success Section */}
+            {submissionSuccess && (
+              <div className="mt-8 text-center animate-fade-in bg-[#E8F5E9] p-6 rounded-xl border border-[#C8E6C9]">
+                <div className="w-12 h-12 bg-[#81C784]/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Check className="w-6 h-6 text-[#2E7D32]" />
+                </div>
+                <h3 className="text-lg font-semibold text-[#1B5E20] mb-2">Answers sent successfully!</h3>
+                <p className="text-[#388E3C] text-sm mb-4">
+                  Your partner can now see your responses.
+                </p>
+                <button
+                  onClick={shareAnsweredLink}
+                  className="btn-secondary bg-white w-full flex items-center justify-center gap-2"
+                >
+                  {copied ? <Check className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4" />}
+                  {copied ? 'Link Copied!' : 'Copy Link to Share Back'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 

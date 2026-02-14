@@ -2,15 +2,15 @@
 
 export type PartnerTitle = 'Partner' | 'Wife' | 'Husband' | 'Girlfriend' | 'Boyfriend' | 'Fiancé' | 'Fiancée' | 'Custom';
 export type Tone = 'Sweet' | 'Funny' | 'Poetic' | 'Deep' | 'Spicy';
-export type CardType = 
-  | 'Memory Lane' 
-  | 'This or That' 
-  | 'Love Quiz' 
-  | 'Gratitude' 
-  | 'Promise Card' 
-  | 'Future Map' 
-  | 'Secret Reveal' 
-  | 'Playlist Link' 
+export type CardType =
+  | 'Memory Lane'
+  | 'This or That'
+  | 'Love Quiz'
+  | 'Gratitude'
+  | 'Promise Card'
+  | 'Future Map'
+  | 'Secret Reveal'
+  | 'Playlist Link'
   | 'Photo Link';
 export type ExpiryOption = '7 days' | '30 days' | 'never';
 export type RibbonColor = 'coral' | 'cream' | 'soft-pink' | 'deep-rose' | 'gold' | 'silver' | 'burgundy' | 'navy';
@@ -81,6 +81,9 @@ export interface LoveLinkData {
   musicUrl?: string;
   hasPin: boolean;
   viewCount: number;
+  card_questions?: Record<CardType, string[]>;
+  card_answers?: Record<CardType, string[]>;
+  reply_slug?: string;
   createdAt: string;
 }
 
@@ -93,6 +96,7 @@ export interface WizardData {
   tone: Tone;
   senderNote: string;
   selectedCards: CardType[];
+  cardQuestions: Partial<Record<CardType, string[]>>;
   bouquet: Bouquet;
   plans: Plans;
   links: LinkItem[];
@@ -180,6 +184,7 @@ export const DEFAULT_WIZARD_DATA: WizardData = {
   tone: 'Sweet',
   senderNote: '',
   selectedCards: ['Memory Lane', 'This or That', 'Love Quiz'],
+  cardQuestions: {},
   bouquet: {
     flowers: [
       { id: '1', type: 'rose', color: '#D56A6A', stemColor: 'green', x: 35, y: 35, rotation: -15, scale: 1, stemLength: 80 },
